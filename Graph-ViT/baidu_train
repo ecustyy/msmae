@@ -1,0 +1,89 @@
+import torch
+import torch.nn as nn
+
+import torchvision.transforms as trans
+from torch.utils.data import Dataset
+from copy import deepcopy
+import baidu_lib
+import warnings
+warnings.filterwarnings('ignore')
+from vitme import ViT
+from mydataloader2 import DataLoader
+# import mydataloader2
+import readData
+import argparse, json
+from graph_transformer_net import GraphTransformerNet
+from baidu_lib import DModel
+from losses import Losstry
+from tensorboardX import SummaryWriter
+import numpy as np
+
+# Config
+batchsize = 3 # 4 patients per iter, i.e, 20 steps / epoch
+oct_img_size = [512, 512]
+image_size = 400
+iters = 100 # For demonstration purposes only, far from reaching convergence
+n_epochs = 150
+val_ratio = 0.2 # 80 / 20
+#testset_root = "val_data/multi-modality_images"
+num_workers = 0
+init_lr = 1e-5
+optimizer_type = "adam"
+use_cuda = True
+data_path = 'E:\\task8\\OCT500\\OCTA-600\\'
+modality_filename = ['OCT','FULL']
+saveroot = r"F:\task9\me\ViT-OCT3.3\output\all-data.npz"
+
+#tensorboard
+logger = SummaryWriter('output')  # tensorboard初始化一个写入单元
+
+# 读取保存的数据
+f = np.load(saveroot, allow_pickle=True)
+fnlist = f['arr_0']
+pres = f['arr_1']
+xalls = f['arr_2']
+attalls = f['arr_3']
+labels = f['arr_4']
+
+img_transforms = trans.Compose([
+    trans.ToTensor(),
+])
+
+# 设置训练数据加载器
+train_loader = DataLoader(
+    dataset=[fnlist, pres, xalls, attalls, labels],
+    img1_trans=img_transforms,
+    img2_trans=img_transforms,
+    batch_size=batchsize,
+    num_workers=0,
+    spmod='rand'
+)
+val_loader = DataLoader(
+    dataset=[fnlist, pres, xalls, attalls, labels],
+    img1_trans=img_transforms,
+    img2_trans=img_transforms,
+    batch_size=batchsize,
+    num_workers=0,
+    spmod='seq'
+)
+#定义模型 优化器 准则
+with open('GraphTransformer_setting.json') as f:
+    config = json.load(f)
+net_params = config['net_params']
+net_params['device'] = torch.device("cuda")
+net_params['gpu_id'] = 0
+net_params['batch_size'] = 128
+
+net_params['num_atom_type'] = 28
+net_params['num_bond_type'] = 4
+model = GraphTransformerNet(net_params)
+device = torch.device("cuda:0" if use_cuda else "cpu")
+# model = DModel(mmodel,gmodel)
+model.to(device)
+
+optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
+criterion = nn.CrossEntropyLoss() #默认为求均值
+
+#训练
+#best_model = baidu_lib.train_ID(model, train_loader, val_loader, criterion, optimizer, n_epochs, device)
+baidu_lib.train_ID(model, train_loader, val_loader, criterion, optimizer, n_epochs, device, logger)
