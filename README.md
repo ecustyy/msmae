@@ -5,8 +5,8 @@ MSAS-ViT文件夹;
 Graph-ViT文件夹
 
 每个模态独特的组织提取方式：
-CFP：Keypoint文件夹
-OCT：Supervoxel.py;
+CFP：Keypoint文件夹;
+OCT：Supervoxel.py
 
 证据融合：evfusion.py
 
