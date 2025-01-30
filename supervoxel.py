@@ -4,7 +4,7 @@ import numpy as np
 import imageio
 from mayavi import mlab
 from tvtk.util.ctf import PiecewiseFunction, ColorTransferFunction
-from skimage.segmentation import slic
+from crfsv import segv
 import torch
 import torch.nn.functional as F
 
@@ -51,7 +51,7 @@ vol._volume_property.set_color(ctf)  # 进行更改，体绘制的colormap及col
 vol.update_ctf = True
 mlab.show()
 
-seg = slic(
+seg = segv(
         image,
         sigma=1, #用于预处理的高斯平滑核的宽度。
         n_segments=125,
