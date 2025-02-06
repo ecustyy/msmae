@@ -1,12 +1,14 @@
 Modality-specificity multi-aware evidence fusion algorithm using CFP and OCT for fundus diseases diagnosis
 
-使用的两个网络模型：
-MSAS-ViT文件夹;
-Graph-ViT文件夹
+There are two modalities, each of which uses separate branches.
 
-每个模态独特的组织提取方式：
-CFP：Keypoint文件夹;
-OCT：supervoxel.py
+CFP modality:
+MSAS-ViT: cfp_mask_train.py (train); cfp_mask_test.py (test);
+Graph-ViT: cfp_graph_train.py (train); cfp_graph_test.py (test);
 
-证据融合：evfusion.py
+OCT modality:
+MSAS-ViT: oct_mask_train.py (train); oct_mask_test.py (test);
+Graph-ViT: oct_graph_train.py (train); oct_graph_test.py (test);
+
+Decision branch：evfusion.py (evidence fusion)
 
